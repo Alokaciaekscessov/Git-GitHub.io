@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git для GitHub — Полный справочник</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f0e;
+    --bg2: #131614;
+    --bg3: #1a1d1b;
+    --bg4: #202421;
+    --border: #252a26;
+    --border2: #2e3530;
+    --green: #4ade80;
+    --green-dim: #22c55e;
+    --green-glow: rgba(74,222,128,0.08);
+    --green-glow2: rgba(74,222,128,0.15);
+    --amber: #fbbf24;
+    --amber-dim: #d97706;
+    --red: #f87171;
+    --blue: #60a5fa;
+    --purple: #a78bfa;
+    --text: #d4d8d5;
+    --text2: #8a9189;
+    --text3: #5a6059;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.7;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* === SIDEBAR === */
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: 220px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    padding: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sidebar-logo {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sidebar-logo .logo-cmd {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.05em;
+    margin-bottom: 4px;
+  }
+
+  .sidebar-logo .logo-title {
+    font-family: var(--sans);
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--green);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .sidebar-logo .logo-sub {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 3px;
+  }
+
+  .sidebar-nav {
+    padding: 16px 0;
+    overflow-y: auto;
+    flex: 1;
+  }
+
+  .nav-section {
+    padding: 4px 12px 12px;
+  }
+
+  .nav-label {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 0 12px;
+    margin-bottom: 4px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--text2);
+    font-size: 12px;
+    font-family: var(--mono);
+    transition: all 0.15s;
+    border: 1px solid transparent;
+  }
+
+  .nav-item:hover {
+    background: var(--bg3);
+    color: var(--text);
+    border-color: var(--border);
+  }
+
+  .nav-item.active {
+    background: var(--green-glow);
+    color: var(--green);
+    border-color: rgba(74,222,128,0.2);
+  }
+
+  .nav-item .nav-num {
+    font-size: 10px;
+    color: var(--text3);
+    min-width: 16px;
+  }
+
+  .nav-item.active .nav-num { color: var(--green-dim); }
+
+  .sidebar-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text3);
+  }
+
+  /* === MAIN === */
+  .main {
+    margin-left: 220px;
+    min-height: 100vh;
+  }
+
+  /* === HERO === */
+  .hero {
+    padding: 60px 56px 40px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::after {
+    content: 'GIT';
+    position: absolute;
+    right: -20px;
+    top: -20px;
+    font-family: var(--sans);
+    font-size: 180px;
+    font-weight: 800;
+    color: rgba(74,222,128,0.03);
+    letter-spacing: -0.05em;
+    pointer-events: none;
+    line-height: 1;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--green-glow);
+    border: 1px solid rgba(74,222,128,0.2);
+    color: var(--green-dim);
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: 99px;
+    margin-bottom: 20px;
+    letter-spacing: 0.05em;
+  }
+
+  .hero-badge::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .hero h1 {
+    font-family: var(--sans);
+    font-size: 42px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+
+  .hero h1 span { color: var(--green); }
+
+  .hero-desc {
+    color: var(--text2);
+    font-size: 13px;
+    max-width: 480px;
+    line-height: 1.8;
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 24px;
+    margin-top: 24px;
+  }
+
+  .hero-meta-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .hero-meta-item .val {
+    font-family: var(--sans);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--green);
+  }
+
+  .hero-meta-item .lbl {
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  /* === CONTENT === */
+  .content {
+    padding: 0 56px 80px;
+  }
+
+  /* === SECTION === */
+  .section {
+    padding-top: 52px;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    padding-top: 6px;
+    min-width: 28px;
+  }
+
+  .section-title-wrap {}
+
+  .section-title {
+    font-family: var(--sans);
+    font-size: 24px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .section-subtitle {
+    font-size: 12px;
+    color: var(--text3);
+    margin-top: 4px;
+  }
+
+  /* === TIP === */
+  .tip {
+    display: flex;
+    gap: 12px;
+    background: rgba(251,191,36,0.04);
+    border: 1px solid rgba(251,191,36,0.15);
+    border-left: 3px solid var(--amber-dim);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+    margin-bottom: 24px;
+    font-size: 12px;
+    color: #c8a84b;
+    line-height: 1.7;
+  }
+
+  .tip::before {
+    content: '!';
+    background: var(--amber-dim);
+    color: #000;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* === COMMAND GRID === */
+  .cmd-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .cmd-grid.single { grid-template-columns: 1fr; }
+  .cmd-grid.triple { grid-template-columns: 1fr 1fr 1fr; }
+
+  /* === CMD CARD === */
+  .cmd-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cmd-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(74,222,128,0.15), transparent);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .cmd-card:hover {
+    border-color: var(--border2);
+    background: var(--bg3);
+  }
+
+  .cmd-card:hover::before { opacity: 1; }
+
+  .cmd-card.wide { grid-column: span 2; }
+
+  .cmd-badge {
+    display: inline-block;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    font-weight: 500;
+  }
+
+  .badge-setup  { background: rgba(96,165,250,0.1); color: #60a5fa; border: 1px solid rgba(96,165,250,0.2); }
+  .badge-basic  { background: rgba(74,222,128,0.08); color: var(--green-dim); border: 1px solid rgba(74,222,128,0.2); }
+  .badge-branch { background: rgba(251,191,36,0.08); color: var(--amber); border: 1px solid rgba(251,191,36,0.2); }
+  .badge-remote { background: rgba(248,113,113,0.08); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+  .badge-adv    { background: rgba(167,139,250,0.08); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+
+  .cmd-title {
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 600;
+    color: #e8ece9;
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+
+  .cmd-code {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--green);
+    line-height: 1.8;
+    white-space: pre;
+    overflow-x: auto;
+    margin-bottom: 10px;
+    position: relative;
+  }
+
+  .cmd-code .comment { color: var(--text3); }
+  .cmd-code .flag { color: var(--amber); }
+  .cmd-code .string { color: #86efac; }
+  .cmd-code .cmd-name { color: #fff; font-weight: 500; }
+
+  .cmd-desc {
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.7;
+  }
+
+  .cmd-desc code {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 1px 5px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--green-dim);
+  }
+
+  /* === SUBSECTION LABEL === */
+  .sub-label {
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin: 28px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .sub-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* === CONFLICT BLOCK === */
+  .conflict-demo {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.8;
+    margin: 10px 0;
+  }
+
+  .conflict-demo .c-head { color: var(--red); }
+  .conflict-demo .c-sep  { color: var(--text3); }
+  .conflict-demo .c-theirs { color: var(--blue); }
+  .conflict-demo .c-code { color: var(--text2); }
+
+  /* === WORKFLOW === */
+  .workflow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    overflow-x: auto;
+  }
+
+  .wf-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    min-width: 90px;
+  }
+
+  .wf-box {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12px;
+    color: var(--green);
+    font-family: var(--mono);
+    white-space: nowrap;
+    text-align: center;
+  }
+
+  .wf-lbl {
+    font-size: 10px;
+    color: var(--text3);
+    text-align: center;
+  }
+
+  .wf-arrow {
+    font-size: 18px;
+    color: var(--border2);
+    padding: 0 4px;
+    padding-bottom: 16px;
+    flex-shrink: 0;
+  }
+
+  /* === CPP SPECIAL === */
+  .gitignore-block {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .gitignore-header {
+    background: var(--bg3);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 14px;
+    font-size: 11px;
+    color: var(--text3);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .gitignore-header::before {
+    content: '';
+    width: 8px; height: 8px;
+    background: var(--red);
+    border-radius: 50%;
+    box-shadow: 14px 0 0 var(--amber-dim), 28px 0 0 var(--green-dim);
+  }
+
+  .gitignore-content {
+    padding: 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 2;
+    color: var(--text2);
+  }
+
+  .gitignore-content .gi-comment { color: var(--text3); }
+  .gitignore-content .gi-path { color: var(--red); }
+  .gitignore-content .gi-ext { color: var(--amber); }
+
+  /* === TABLE: WHAT TO COMMIT === */
+  .do-dont {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .do-box, .dont-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .do-box-header, .dont-box-header {
+    padding: 10px 14px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .do-box-header { background: rgba(74,222,128,0.06); color: var(--green-dim); }
+  .dont-box-header { background: rgba(248,113,113,0.06); color: var(--red); }
+
+  .do-box-content, .dont-box-content {
+    padding: 12px 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 2;
+  }
+
+  .do-box-content { color: var(--green-dim); }
+  .dont-box-content { color: var(--red); opacity: 0.7; text-decoration: line-through; text-decoration-color: rgba(248,113,113,0.4); }
+
+  /* === SCROLLBAR === */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+  /* === DIVIDER === */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 48px 0 0;
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-cmd">$ git --help</div>
+    <div class="logo-title">Git<br>Справочник</div>
+    <div class="logo-sub">Arch Linux + CLion + C++</div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">
+      <div class="nav-label">Разделы</div>
+      <a href="#setup" class="nav-item active">
+        <span class="nav-num">01</span> Настройка
+      </a>
+      <a href="#start" class="nav-item">
+        <span class="nav-num">02</span> Старт проекта
+      </a>
+      <a href="#basic" class="nav-item">
+        <span class="nav-num">03</span> Основные
+      </a>
+      <a href="#branch" class="nav-item">
+        <span class="nav-num">04</span> Ветки
+      </a>
+      <a href="#remote" class="nav-item">
+        <span class="nav-num">05</span> GitHub / Remote
+      </a>
+      <a href="#history" class="nav-item">
+        <span class="nav-num">06</span> История
+      </a>
+      <a href="#undo" class="nav-item">
+        <span class="nav-num">07</span> Отмена
+      </a>
+      <a href="#advanced" class="nav-item">
+        <span class="nav-num">08</span> Продвинутые
+      </a>
+      <a href="#cpp" class="nav-item">
+        <span class="nav-num">C+</span> C++ / CLion
+      </a>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    git version 2.x · github.com
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">ПОЛНЫЙ СПРАВОЧНИК</div>
+    <h1>Git для <span>GitHub</span></h1>
+    <p class="hero-desc">Все команды по порядку — от настройки до продвинутых техник. Оптимизировано для C++ проектов в CLion на Arch Linux.</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item">
+        <span class="val">40+</span>
+        <span class="lbl">команд</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="val">9</span>
+        <span class="lbl">разделов</span>
+      </div>
+      <div class="hero-meta-item">
+        <span class="val">C++</span>
+        <span class="lbl">готово</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ======= 1. НАСТРОЙКА ======= -->
+    <section class="section" id="setup">
+      <div class="section-header">
+        <div class="section-num">01</div>
+        <div class="section-title-wrap">
+          <div class="section-title">Настройка</div>
+          <div class="section-subtitle">Выполняется один раз после установки Git</div>
+        </div>
+      </div>
+
+      <div class="tip">Без этих настроек коммиты будут анонимными и GitHub не свяжет их с твоим аккаунтом.</div>
+
+      <div class="cmd-grid">
+        <div class="cmd-card">
+          <div class="cmd-badge badge-setup">первый запуск</div>
+          <div class="cmd-title">Имя и email</div>
+          <div class="cmd-code"><span class="cmd-name">git</span> config <span class="flag">--global</span> user.name <span class="string">"Твоё Имя"</span>
+<span class="cmd-name">git</span> config <span class="flag">--global</span> user.email <span class="string">"you@example.com"</span></div>
+          <div class="cmd-desc">GitHub будет показывать это имя под каждым твоим коммитом.</div>
+        </div>
+
+        <div class="cmd-card">
+          <div class="cmd-badge badge-setup">удобство</div>
+          <div class="cmd-title">Редактор по умолчанию</div>
+          <div class="cmd-code"><span class="cmd-name">git</span> config <span class="flag">--global</span> core.editor nano</div>
+          <div class="cmd-desc">Используй <code>nano</code> вместо vim — проще для новичков. Или <code>vim</code>, если умеешь.</div>
+        </div>
+
+        <div class="cmd-card">
+          <div class="cmd-badge badge-setup">проверка</div>
+          <div class="cmd-title">Посмотреть все настройки</div>
+          <div class="cmd-code"><span class="cmd-name">git</span> config <span class="flag">--list</span></div>
+          <div class="cmd-desc">Выводит все текущие настройки Git — имя, email, редактор и т.д.</div>
+        </div>
+
+        <div class="cmd-card">
+          <div class="cmd-badge badge-setup">SSH ключ</div>
+          <div class="cmd-title">Создать SSH ключ для GitHub</div>
+          <div class="cmd-code"><span class="cmd-name">ssh-keygen</span> <span class="flag">-t</span> ed25519 <span class="flag">-C</span> <span class="string">"you@example.com"</span>
+cat ~/.ssh/id_ed25519.pub</div>
+          <div class="cmd-desc">Скопируй вывод → GitHub → Settings → SSH Keys. Больше не нужен пароль при push.</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ======= 2. СТАРТ ======= -->
+    <section class="section" id="start">
+      <div class="section-header">
+        <div class="section-num">02</div>
+        <div class="section-title-wrap">
+          <div class="section-title">Старт проекта</div>
+          <div class="section-subtitle">Новый репозиторий или клонирование существующего</div>
+        </div>
+      </div>
+
+      <div class="sub-label">Новый проект с нуля</div>
+      <div class="cmd-grid single">
+        <div class="cmd-card">
+          <div class="cmd-badge badge-basic">инициализация</div>
+          <div class="cmd-title">Создать репозиторий в текущей папке</div>
+          <div class="cmd-code">cd ~/projects/MyCppProject
+<span class="cmd-name">git</span> init</div>
+          <div class="cmd-desc">Создаёт скрытую папку <code>.git</code> — это и есть весь репозиторий. Нет .git — нет Git.</div>
+        </div>
+      </div>
+
+      <div class="sub-label">Уже существующий проект с GitHub</div>
+      <div class="cmd-grid single">
+        <div class="cmd-card">
+          <div class="cmd-badge badge-basic">клонирование</div>
+          <div class="cmd-title">Скачать репозиторий с GitHub</div>
+          <div class="cmd-code"><span class="comment"># Через SSH (рекомендуется — не нужен пароль):</span>
+<span class="cmd-name">git</span> clone git@github.com:username/repo.git
+
+<span class="comment"># Или через HTTPS:</span>
+<span class="cmd-name">git</span> clone https://github.com/username/repo.git</div>
+          <div class="cmd-desc">Создаёт папку с именем репозитория и скачивает все файлы + историю коммитов.</div>
+        </div>
+      </div>
+
+      <div class="sub-label">Связать локальный репо с GitHub</div>
+      <div class="cmd-grid single">
+        <div class="cmd-card">
+          <div class="cmd-badge badge-basic">связать</div>
+          <div class="cmd-title">Привязать GitHub к существующему локальному репо</div>
+          <div class="cmd-code"><span class="cmd-name">git</span> remote add origin git@github.com:username/repo.git
+<span class="cmd-name">git</span> branch <span class="flag">-M</span> main
+<span class="cmd-name">git</span> push <span class="flag">-u</span> origin main</div>
+          <div class="cmd-desc">Если создал <code>git init</code> локально, а потом создал пустой репо на GitHub — используй это чтобы их связать.</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ======= 3. ОСНОВНЫЕ ======= -->
+    <section class="section" id="basic">
+      <div class="section-header">
+        <div class="section-num">03</div>
+        <div class="section-title-wrap">
+          <div class="section-title">Основные команды</div>
+          <div class="section-subtitle">Рабочий цикл каждого дня</div>
+        </div>
+      </div>
+
+      <div class="workflow">
+        <div class="wf-step">
+          <div class="wf-box">изменил файлы</div>
+          <div class="wf-lbl">в CLion</div>
+        </div>
+        <div class="wf-arrow">→</div>
+        <div class="wf-step">
+          <div class="wf-box">git add</div>
+          <div class="wf-lbl">staging</div>
+        </div>
+        <div class="wf-arrow">→</div>
+        <div class="wf-step">
+          <div class="wf-box">git commit</div>
+          <div class="wf-lbl">snapshot</div>
+        </div>
+        <div class="wf-arrow">→</div>
+        <div class="wf-step">
+          <div class="wf-box">git push</div>
+          <div class="wf-lbl">GitHub</div>
+        </div>
+      </div>
+
+      <div class="cmd-grid">
+        <div class="cmd-card">
+          <div class="cmd-badge badge-basic">статус</div>
+          <div class="cmd-title">Что изменилось?</div>
+          <div class="cmd-code"><span class="cmd-name">git</span> status</div>
+          <div class="cmd-desc">Показывает какие файлы изменены, готовы к коммиту или не отслеживаются. Используй часто!</div>
+        </div>
+
+        <div class="cmd-card">
+          <div class="cmd-badge badge-basic">разница</div>
+          <div class="cmd-title">Что именно изменилось?</div>
+          <div class="cmd-code"><span class="comment"># Изменения ещё не в staging:</span>
+<span class="cmd-name">git</span> diff
+
+<span class="comment"># Изменения уже после git add:</span>
+<span class="cmd-name">git</span> diff <span class="flag">--staged</span></div>
+          <div class="cmd-desc">Показывает построчно что добавлено (+) и удалено (-).</div>
+        </div>
+
+        <div class="cmd-card wide">
+          <div class="cmd-badge badge-basic">добавить</div>
+          <div class="cmd-title">Подготовить файлы к коммиту (staging)</div>
+          <div class="cmd-code"><span class="comment"># Один файл:</span>
+<span class="cmd-name">git</span> add main.cpp
+
+<span class="comment"># Несколько файлов:</span>
+<span class="cmd-name">git</span> add main.cpp utils.cpp
+
+<span class="comment"># Все изменённые файлы в текущей папке:</span>
+<span class="cmd-name">git</span> add .
+
+<span class="comment"># Все .cpp файлы:</span>
+<span class="cmd-name">git</span> add *.cpp</div>
+          <div class="cmd-desc">Git не записывает изменения автоматически. Нужно сначала «отметить» что войдёт в следующий коммит.</div>
+        </div>
+
+        <div class="cmd-card wide">
+          <div class="cmd-badge badge-basic">коммит</div>
+          <div class="cmd-title">Сохранить snapshot</div>
+          <div class="cmd-code"><span class="comment"># Обычный коммит:</span>
+<span class="cmd-name">git</span> commit <span class="flag">-m</span> <span class="string">"Добавил класс Vector3D"</span>
+
+<span class="comment"># Добавить и сразу закоммитить (только уже отслеживаемые файлы):</span>
+<span class="cmd-name">git</span> commit <span class="flag">-am</span> <span class="string">"Исправил баг в рендере"</span></div>
+          <div class="cmd-desc">Коммит — это сохранение с сообщением. Пиши понятно: <em>что</em> и <em>зачем</em> сделал. Не «фикс», а «Исправил краш при нулевом указателе в Renderer».</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ======= 4. ВЕТКИ ======= -->
+    <section class="section" id="branch">
+      <div class="section-header">
+        <div class="section-num">04</div>
+        <div class="section-title-wrap">
+          <div class="section-title">Ветки (branches)</div>
+          <div class="section-subtitle">Параллельные версии проекта</div>
+        </div>
+      </div>
+
+      <div class="tip">Ветка = параллельная версия проекта. Работай на отдельной ветке — main всегда остаётся рабочим.</div>
+
+      <div class="cmd-grid">
+        <div class="cmd-card">
+          <div class="cmd-badge badge-branch">просмотр</div>
+          <div class="cmd-title">Список веток</div>
+          <div class="cmd-code"><span class="comment"># Локальные:</span>
+<span class="cmd-name">git</span> branch
+
+<span class="comment"># Все включая удалённые:</span>
+<span class="cmd-name">git</span> branch <span class="flag">-a</span></div>
+          <div class="cmd-desc">Текущая ветка помечена звёздочкой *.</div>
+        </div>
+
+        <div class="cmd-card">
+          <div class="cmd-badge badge-branch">создать</div>
+          <div class="cmd-title">Создать и переключиться</div>
+          <div class="cmd-code"><span class="comment"># Создать и сразу переключиться:</span>
+<span class="cmd-name">git</span> checkout <span class="flag">-b</span> feature/physics-engine
+
+<span class="comment"># Современный синтаксис (Git 2.23+):</span>
+<span class="cmd-name">git</span> switch <span class="flag">-c</span> feature/physics-engine</div>
+          <div class="cmd-desc">Называй ветки понятно: <code>feature/название</code>, <code>fix/баг</code>, <code>refactor/что</code>.</div>
+        </div>
+
+        <div class="cmd-card">
+          <div class="cmd-badge badge-branch">слияние</div>
+          <div class="cmd-title">Влить ветку в main</div>
+          <div class="cmd-code"><span class="cmd-name">git</span> checkout main
+<span class="cmd-name">git</span> merge feature/physics-engine</div>
+          <div class="cmd-desc">Переходишь на main, затем вливаешь в него изменения из feature-ветки.</div>
+        </div>
+
+        <div class="cmd-card">
+          <div class="cmd-badge badge-branch">удалить</div>
+          <div class="cmd-title">Удалить ветку</div>
+          <div class="cmd-code"><span class="comment"># После merge (безопасно):</span>
+<span class="cmd-name">git</span> branch <span class="flag">-d</span> feature/physics-engine
+
+<span class="comment"># Принудительно:</span>
+<span class="cmd-name">git</span> branch <span class="flag">-D</span> feature/physics-engine
+
+<span class="comment"># Удалить на GitHub:</span>
+<span class="cmd-name">git</span> push origin <span class="flag">--delete</span> feature/physics-engine</div>
+        </div>
+
+        <div class="cmd-card wide">
+          <div class="cmd-badge badge-branch">конфликты</div>
+          <div class="cmd-title">Если возник конфликт при merge</div>
+          <div class="conflict-demo"><span class="c-head">&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD</span>
+<span class="c-code">твой код здесь</span>
+<span class="c-sep">=======</span>
+<span class="c-theirs">чужой код здесь</span>
+<span class="c-theirs">&gt;&gt;&gt;&gt;&gt;&gt;&gt; feature/physics-engine</span></div>
+          <div class="cmd-code"><span class="comment"># После ручного исправления файла:</span>
+<span class="cmd-name">git</span> add main.cpp
+<span class="cmd-name">git</span> commit <span class="flag">-m</span> <span class="string">"Разрешил конфликт в main.cpp"</span></div>
+          <div class="cmd-desc">Конфликт = два человека изменили одно место. Git не знает чья правка верная — решаешь ты. Открой файл, найди маркеры <code>&lt;&lt;&lt;&lt;&lt;&lt;&lt;</code>, выбери нужный код, сохрани.</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ======= 5. GITHUB ======= -->
+    <section class="section" id="remote">
+      <div class="section-header">
+        <div class="section-num">05</div>
+        <div class="section-title-wrap">
+          <div class="section-title">GitHub / Remote</div>
+          <div class="section-subtitle">Работа с удалёнными репозиториями</div>
+        </div>
+      </div>
+
+      <div class="tip"><code>origin</code> — это просто псевдоним для адреса твоего репозитория на GitHub. Можно назвать как угодно, но origin — стандарт.</div>
+
+      <div class="cmd-grid">
+        <div class="cmd-card">
+          <div class="cmd-badge badge-remote">push</div>
+          <div class="cmd-title">Отправить коммиты на GitHub</div>
+          <div class="cmd-code"><span class="comment"># Обычный push:</span>
+<span class="cmd-name">git</span> push
+
+<span class="comment"># Первый push новой ветки:</span>
+<span class="cmd-name">git</span> push <span class="flag">-u</span> origin feature/physics-engine
+
+<span class="comment"># После -u достаточно просто:</span>
+<span class="cmd-name">git</span> push</div>
+          <div class="cmd-desc">Флаг <code>-u</code> запоминает куда пушить — больше не нужно указывать origin и ветку.</div>
+        </div>
+
+        <div class="cmd-card">
+          <div class="cmd-badge badge-remote">pull</div>
+          <div class="cmd-title">Получить изменения с GitHub</div>
+          <div class="cmd-code"><span class="comment"># Скачать И влить в текущую ветку:</span>
+<span class="cmd-name">git</span> pull
+
+<span class="comment"># Только скачать (без слияния):</span>
+<span class="cmd-name">git</span> fetch origin</div>
+          <div class="cmd-desc"><code>pull</code> = <code>fetch</code> + <code>merge</code>. Делай pull перед началом работы каждый день.</div>
+        </div>
+
+        <div class="cmd-card">
+          <div class="cmd-badge badge-remote">просмотр</div>
+          <div class="cmd-title">Просмотр удалённых репо</div>
+          <div class="cmd-code"><span class="cmd-name">git</span> remote <span class="flag">-v</span></div>
+          <div class="cmd-desc">Показывает адреса fetch и push. Полезно проверить правильный ли URL.</div>
+        </div>
+
+        <div class="cmd-card">
+          <div class="cmd-badge badge-remote">pull request</div>
+          <div class="cmd-title">Workflow с Pull Request</div>
+          <div class="cmd-code"><span class="cmd-name">git</span> checkout <span class="flag">-b</span> feature/new-shader
+<span class="comment"># делаешь изменения...</span>
+<span class="cmd-name">git</span> add .
+<span class="cmd-name">git</span> commit <span class="flag">-m</span> <span class="string">"Добавил PBR шейдер"</span>
+<span class="cmd-name">git</span> push <span class="flag">-u</span> origin feature/new-shader
+<span class="comment"># → GitHub → New Pull Request</span></div>
+          <div class="cmd-desc">Pull Request — предложение влить ветку в main. Другие могут проверить код перед merge.</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ======= 6. ИСТОРИЯ ======= -->
+    <section class="section" id="history">
+      <div class="section-header">
+        <div class="section-num">06</div>
+        <div class="section-title-wrap">
+          <div class="section-title">История коммитов</div>
+          <div class="section-subtitle">Просмотр, поиск, навигация</div>
+        </div>
+      </div>
+
+      <div class="cmd-grid">
+        <div class="cmd-card">
+          <div class="cmd-badge badge-basic">лог</div>
+          <div class="cmd-title">Просмотр истории</div>
+          <div class="cmd-code"><span class="comment"># Полный лог:</span>
+<span class="cmd-name">git</span> log
+
+<span class="comment"># Компактный (одна строка):</span>
+<span class="cmd-name">git</span> log <span class="flag">--oneline</span>
+
+<span class="comment"># Красивый граф с ветками:</span>
+<span class="cmd-name">git</span> log <span class="flag">--oneline --graph --all</span>
+
+<span class="comment"># Последние 5 коммитов:</span>
+<span class="cmd-name">git</span> log <span class="flag">-5 --oneline</span></div>
+        </div>
+
+        <div class="cmd-card">
+          <div class="cmd-badge badge-basic">поиск</div>
+          <div class="cmd-title">Найти коммит</div>
+          <div class="cmd-code"><span class="comment"># По сообщению:</span>
+<span class="cmd-name">git</span> log <span class="flag">--oneline --grep=</span><span class="string">"шейдер"</span>
+
+<span class="comment"># По автору:</span>
+<span class="cmd-name">git</span> log <span class="flag">--oneline --author=</span><span class="string">"Vasya"</span>
+
+<span class="comment"># Когда добавилась функция:</span>
+<span class="cmd-name">git</span> log <span class="flag">-S</span> <span class="string">"renderShadow"</span> <span class="flag">--oneline</span></div>
+        </div>
+
+        <div class="cmd-card">
+          <div class="cmd-badge badge-basic">просмотр</div>
+          <div class="cmd-title">Посмотреть конкретный коммит</div>
+          <div class="cmd-code"><span class="comment"># Что изменилось в коммите:</span>
+<span class="cmd-name">git</span> show abc1234
+
+<span class="comment"># Конкретный файл в том коммите:</span>
+<span class="cmd-name">git</span> show abc1234:src/main.cpp</div>
+        </div>
+
+        <div class="cmd-card">
+          <div class="cmd-badge badge-basic">файл</div>
+          <div class="cmd-title">История конкретного файла</div>
+          <div class="cmd-code"><span class="cmd-name">git</span> log <span class="flag">--oneline</span> -- main.cpp
+
+<span class="comment"># Кто изменял каждую строку:</span>
+<span class="cmd-name">git</span> blame main.cpp</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ======= 7. ОТМЕНА ======= -->
+    <section class="section" id="undo">
+      <div class="section-header">
+        <div class="section-num">07</div>
+        <div class="section-title-wrap">
+          <div class="section-title">Отмена изменений</div>
+          <div class="section-subtitle">Исправляем ошибки</div>
+        </div>
+      </div>
+
+      <div class="tip">Правило: до push — можно переписывать историю. После push — только новые коммиты (revert).</div>
+
+      <div class="cmd-grid">
+        <div class="cmd-card">
+          <div class="cmd-badge badge-adv">staging</div>
+          <div class="cmd-title">Убрать файл из git add</div>
+          <div class="cmd-code"><span class="cmd-name">git</span> restore <span class="flag">--staged</span> main.cpp</div>
+          <div class="cmd-desc">Файл останется изменённым, но не войдёт в следующий коммит.</div>
+        </div>
+
+        <div class="cmd-card">
+          <div class="cmd-badge badge-adv">откат файла</div>
+          <div class="cmd-title">Откатить файл к последнему коммиту</div>
+          <div class="cmd-code"><span class="cmd-name">git</span> restore main.cpp</div>
+          <div class="cmd-desc">Осторожно! Все несохранённые изменения в этом файле пропадут безвозвратно.</div>
+        </div>
+
+        <div class="cmd-card">
+          <div class="cmd-badge badge-adv">amend</div>
+          <div class="cmd-title">Исправить последний коммит</div>
+          <div class="cmd-code"><span class="comment"># Только сообщение:</span>
+<span class="cmd-name">git</span> commit <span class="flag">--amend -m</span> <span class="string">"Правильное сообщение"</span>
+
+<span class="comment"># Добавить забытый файл:</span>
+<span class="cmd-name">git</span> add забытый.cpp
+<span class="cmd-name">git</span> commit <span class="flag">--amend --no-edit</span></div>
+          <div class="cmd-desc">Только если ещё <strong>не запушил</strong>! После push используй revert.</div>
+        </div>
+
+        <div class="cmd-card">
+          <div class="cmd-badge badge-adv">revert</div>
+          <div class="cmd-title">Отменить коммит (безопасно)</div>
+          <div class="cmd-code"><span class="cmd-name">git</span> revert abc1234</div>
+          <div class="cmd-desc">Создаёт новый коммит, который отменяет изменения. История не портится. Можно пушить. Это правильный способ после push.</div>
+        </div>
+
+        <div class="cmd-card wide">
+          <div class="cmd-badge badge-adv">reset</div>
+          <div class="cmd-title">Сбросить к коммиту (осторожно!)</div>
+          <div class="cmd-code"><span class="comment"># Мягкий: коммиты убраны, изменения в staging:</span>
+<span class="cmd-name">git</span> reset <span class="flag">--soft</span> HEAD~1
+
+<span class="comment"># Средний: коммиты убраны, изменения в рабочей папке:</span>
+<span class="cmd-name">git</span> reset <span class="flag">--mixed</span> HEAD~2
+
+<span class="comment"># Жёсткий: всё удалено без возврата:</span>
+<span class="cmd-name">git</span> reset <span class="flag">--hard</span> HEAD~1</div>
+          <div class="cmd-desc"><code>HEAD~1</code> = один коммит назад. <code>HEAD~2</code> = два коммита назад. Только до push!</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ======= 8. ПРОДВИНУТЫЕ ======= -->
+    <section class="section" id="advanced">
+      <div class="section-header">
+        <div class="section-num">08</div>
+        <div class="section-title-wrap">
+          <div class="section-title">Продвинутые команды</div>
+          <div class="section-subtitle">Stash, rebase, cherry-pick, tags</div>
+        </div>
+      </div>
+
+      <div class="cmd-grid">
+        <div class="cmd-card">
+          <div class="cmd-badge badge-adv">stash</div>
+          <div class="cmd-title">Спрятать незаконченную работу</div>
+          <div class="cmd-code"><span class="comment"># Спрятать:</span>
+<span class="cmd-name">git</span> stash
+
+<span class="comment"># Спрятать с именем:</span>
+<span class="cmd-name">git</span> stash push <span class="flag">-m</span> <span class="string">"WIP: рефакторинг"</span>
+
+<span class="comment"># Список:</span>
+<span class="cmd-name">git</span> stash list
+
+<span class="comment"># Достать последнее:</span>
+<span class="cmd-name">git</span> stash pop</div>
+          <div class="cmd-desc">Нужно срочно переключиться, но коммит делать рано? Прячь в stash.</div>
+        </div>
+
+        <div class="cmd-card">
+          <div class="cmd-badge badge-adv">rebase</div>
+          <div class="cmd-title">Перенести ветку на другую основу</div>
+          <div class="cmd-code"><span class="comment"># Перебазировать на текущий main:</span>
+<span class="cmd-name">git</span> checkout feature/physics
+<span class="cmd-name">git</span> rebase main
+
+<span class="comment"># Интерактивный (переписать 3 коммита):</span>
+<span class="cmd-name">git</span> rebase <span class="flag">-i</span> HEAD~3</div>
+          <div class="cmd-desc">Делает историю линейной. Только для локальных веток или если работаешь один.</div>
+        </div>
+
+        <div class="cmd-card">
+          <div class="cmd-badge badge-adv">cherry-pick</div>
+          <div class="cmd-title">Взять один коммит из другой ветки</div>
+          <div class="cmd-code"><span class="cmd-name">git</span> cherry-pick abc1234</div>
+          <div class="cmd-desc">Полезно если нужно срочно перенести одно исправление в main, не сливая всю ветку.</div>
+        </div>
+
+        <div class="cmd-card">
+          <div class="cmd-badge badge-adv">tags</div>
+          <div class="cmd-title">Пометить версию тегом</div>
+          <div class="cmd-code"><span class="cmd-name">git</span> tag <span class="flag">-a</span> v1.0.0 <span class="flag">-m</span> <span class="string">"Первый релиз"</span>
+<span class="cmd-name">git</span> push origin v1.0.0
+<span class="cmd-name">git</span> push origin <span class="flag">--tags</span></div>
+          <div class="cmd-desc">Теги — именованные точки в истории. Используй для версий релизов.</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ======= C++ ======= -->
+    <section class="section" id="cpp">
+      <div class="section-header">
+        <div class="section-num">C++</div>
+        <div class="section-title-wrap">
+          <div class="section-title">C++ и CLion</div>
+          <div class="section-subtitle">Настройка .gitignore и правильный workflow</div>
+        </div>
+      </div>
+
+      <div class="tip">CLion использует CMake. Важно создать .gitignore до первого <code>git add .</code> — иначе гигабайты бинарников попадут в репо.</div>
+
+      <div class="sub-label">Что коммитить, а что нет</div>
+      <div class="do-dont" style="margin-bottom: 24px;">
+        <div class="do-box">
+          <div class="do-box-header">✓ Коммитить</div>
+          <div class="do-box-content">src/*.cpp  src/*.h
+include/*.h
+CMakeLists.txt
+README.md
+.gitignore
+tests/*.cpp</div>
+        </div>
+        <div class="dont-box">
+          <div class="dont-box-header">✗ Не коммитить</div>
+          <div class="dont-box-content">cmake-build-debug/
+cmake-build-release/
+.idea/workspace.xml
+*.o  *.exe  *.out
+build/  out/</div>
+        </div>
+      </div>
+
+      <div class="sub-label">Файл .gitignore для CLion / C++</div>
+      <div class="gitignore-block" style="margin-bottom: 24px;">
+        <div class="gitignore-header">.gitignore</div>
+        <div class="gitignore-content"><span class="gi-comment"># CMake / Build артефакты</span>
+<span class="gi-path">cmake-build-debug/</span>
+<span class="gi-path">cmake-build-release/</span>
+<span class="gi-path">cmake-build-*/</span>
+<span class="gi-path">build/</span>
+<span class="gi-path">out/</span>
+
+<span class="gi-comment"># CLion IDE файлы</span>
+<span class="gi-path">.idea/</span>
+
+<span class="gi-comment"># Скомпилированные файлы</span>
+<span class="gi-ext">*.o</span>
+<span class="gi-ext">*.obj</span>
+<span class="gi-ext">*.a</span>
+<span class="gi-ext">*.lib</span>
+<span class="gi-ext">*.so</span>
+<span class="gi-ext">*.dll</span>
+<span class="gi-ext">*.exe</span>
+<span class="gi-ext">*.out</span>
+
+<span class="gi-comment"># Системные файлы</span>
+<span class="gi-ext">.DS_Store</span>
+<span class="gi-ext">Thumbs.db</span></div>
+      </div>
+
+      <div class="cmd-grid">
+        <div class="cmd-card wide">
+          <div class="cmd-badge badge-basic">старт проекта</div>
+          <div class="cmd-title">Типичный старт C++ проекта с нуля</div>
+          <div class="cmd-code"><span class="comment"># 1. Создаёшь проект в CLion</span>
+cd ~/CLionProjects/MyProject
+
+<span class="comment"># 2. Инициализируешь Git</span>
+<span class="cmd-name">git</span> init
+
+<span class="comment"># 3. Создаёшь .gitignore (скопируй блок выше)</span>
+
+<span class="comment"># 4. Первый коммит</span>
+<span class="cmd-name">git</span> add .
+<span class="cmd-name">git</span> commit <span class="flag">-m</span> <span class="string">"Начальная структура проекта"</span>
+
+<span class="comment"># 5. Создаёшь пустой репо на github.com (без README!)</span>
+
+<span class="comment"># 6. Связываешь и пушишь</span>
+<span class="cmd-name">git</span> remote add origin git@github.com:ты/проект.git
+<span class="cmd-name">git</span> branch <span class="flag">-M</span> main
+<span class="cmd-name">git</span> push <span class="flag">-u</span> origin main</div>
+        </div>
+
+        <div class="cmd-card">
+          <div class="cmd-badge badge-basic">если .idea попало</div>
+          <div class="cmd-title">Убрать .idea из отслеживания</div>
+          <div class="cmd-code"><span class="cmd-name">git</span> rm <span class="flag">-r --cached</span> .idea/
+echo <span class="string">".idea/"</span> >> .gitignore
+<span class="cmd-name">git</span> add .gitignore
+<span class="cmd-name">git</span> commit <span class="flag">-m</span> <span class="string">"Убрал .idea из репо"</span>
+<span class="cmd-name">git</span> push</div>
+          <div class="cmd-desc">Флаг <code>--cached</code> убирает из Git, но не удаляет файлы с диска.</div>
+        </div>
+
+        <div class="cmd-card">
+          <div class="cmd-badge badge-branch">workflow</div>
+          <div class="cmd-title">Ежедневный workflow</div>
+          <div class="cmd-code"><span class="comment"># Начало дня:</span>
+<span class="cmd-name">git</span> pull
+
+<span class="comment"># Новая фича:</span>
+<span class="cmd-name">git</span> checkout <span class="flag">-b</span> feature/collision
+
+<span class="comment"># Работаешь в CLion...</span>
+<span class="cmd-name">git</span> add src/Collision.cpp src/Collision.h
+<span class="cmd-name">git</span> commit <span class="flag">-m</span> <span class="string">"Добавил AABB коллизии"</span>
+<span class="cmd-name">git</span> push <span class="flag">-u</span> origin feature/collision</div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /content -->
+</main>
+
+<script>
+  // Подсветка активного пункта меню при скролле
+  const sections = document.querySelectorAll('.section');
+  const navItems = document.querySelectorAll('.nav-item');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        navItems.forEach(item => {
+          item.classList.remove('active');
+          if (item.getAttribute('href') === '#' + id) {
+            item.classList.add('active');
+          }
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
